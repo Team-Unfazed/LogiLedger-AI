@@ -1,10 +1,12 @@
 import { v4 as uuidv4 } from "uuid";
 
 // In-memory database (replace with actual database in production)
-const consignments = new Map();
+export const consignments = new Map();
 
 export const handleCreateConsignment = (req, res) => {
   try {
+    console.log("[CreateConsignment] user:", req.user);
+    console.log("[CreateConsignment] body:", req.body);
     const {
       title,
       origin,
@@ -26,6 +28,7 @@ export const handleCreateConsignment = (req, res) => {
       !deadline ||
       !budget
     ) {
+      console.log("[CreateConsignment] Validation failed");
       return res.status(400).json({
         success: false,
         message: "All required fields must be provided",
@@ -33,6 +36,7 @@ export const handleCreateConsignment = (req, res) => {
     }
 
     if (req.user.userType !== "company") {
+      console.log("[CreateConsignment] Not a company user");
       return res.status(403).json({
         success: false,
         message: "Only companies can create consignments",
@@ -60,6 +64,7 @@ export const handleCreateConsignment = (req, res) => {
     };
 
     consignments.set(consignmentId, consignment);
+    console.log("[CreateConsignment] Consignment created:", consignment);
 
     res.status(201).json({
       success: true,
@@ -67,7 +72,7 @@ export const handleCreateConsignment = (req, res) => {
       message: "Consignment created successfully",
     });
   } catch (error) {
-    console.error("Create consignment error:", error);
+    console.error("[CreateConsignment] Error:", error);
     res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -251,5 +256,58 @@ export const incrementBidCount = (consignmentId) => {
   }
 };
 
-// Export consignments for other modules (temporary, use database in production)
-export { consignments };
+export const handleSeedConsignments = (req, res) => {
+  try {
+    if (!req.user || req.user.userType !== "company") {
+      return res.status(403).json({
+        success: false,
+        message: "Only authenticated company users can seed consignments",
+      });
+    }
+    const consignment1 = {
+      id: uuidv4(),
+      title: "Electronics Delivery Mumbai to Delhi",
+      origin: "Mumbai, MH",
+      destination: "Delhi, DL",
+      goodsType: "electronics",
+      weight: 500,
+      deadline: "2024-12-15",
+      budget: 25000,
+      description: "Urgent delivery of electronic components",
+      status: "open",
+      companyId: req.user.id,
+      companyName: req.user.companyName || req.user.name,
+      bidCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    const consignment2 = {
+      id: uuidv4(),
+      title: "Textile Shipment Chennai to Bangalore",
+      origin: "Chennai, TN",
+      destination: "Bangalore, KA",
+      goodsType: "textiles",
+      weight: 1200,
+      deadline: "2024-12-20",
+      budget: 18000,
+      description: "Cotton textile shipment for manufacturing",
+      status: "open",
+      companyId: req.user.id,
+      companyName: req.user.companyName || req.user.name,
+      bidCount: 0,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    consignments.set(consignment1.id, consignment1);
+    consignments.set(consignment2.id, consignment2);
+    res.json({
+      success: true,
+      message: "Seeded two consignments",
+      consignments: [consignment1, consignment2],
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Error seeding consignments" });
+  }
+};
+
+

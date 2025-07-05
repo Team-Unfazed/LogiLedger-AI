@@ -42,6 +42,7 @@ import {
   FileText,
   BarChart3,
 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function CompanyDashboard() {
   const { user, logout } = useAuth();
@@ -65,6 +66,7 @@ export default function CompanyDashboard() {
     budget: "",
     description: "",
   });
+  const { toast } = useToast();
 
   useEffect(() => {
     fetchConsignments();
@@ -95,35 +97,37 @@ export default function CompanyDashboard() {
   const handleCreateConsignment = async (e) => {
     e.preventDefault();
     try {
-      // Mock creation
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      const mockNewConsignment = {
-        id: `cons_${Date.now()}`,
-        ...newConsignment,
-        weight: parseFloat(newConsignment.weight),
-        budget: parseFloat(newConsignment.budget),
-        status: "open",
-        companyId: user?.id,
-        companyName: user?.companyName,
-        bidCount: 0,
-        createdAt: new Date().toISOString(),
-      };
-
-      setConsignments((prev) => [mockNewConsignment, ...prev]);
-      setShowCreateForm(false);
-      setNewConsignment({
-        title: "",
-        origin: "",
-        destination: "",
-        goodsType: "",
-        weight: "",
-        deadline: "",
-        budget: "",
-        description: "",
+      const token = localStorage.getItem("logiledger_token");
+      const response = await fetch("/api/consignments/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newConsignment),
       });
+      const data = await response.json();
+      if (response.ok) {
+        setShowCreateForm(false);
+        setNewConsignment({
+          title: "",
+          origin: "",
+          destination: "",
+          goodsType: "",
+          weight: "",
+          deadline: "",
+          budget: "",
+          description: "",
+        });
+        fetchConsignments();
+        toast({ title: "Consignment created!", description: data.message || "Your consignment was posted.", variant: "success" });
+      } else {
+        setConsignmentsError("Failed to create consignment.");
+        toast({ title: "Error", description: data.message || "Failed to create consignment.", variant: "destructive" });
+      }
     } catch (error) {
-      console.error("Error creating consignment:", error);
+      setConsignmentsError("Error creating consignment.");
+      toast({ title: "Error", description: error.message || "Error creating consignment.", variant: "destructive" });
     }
   };
 
