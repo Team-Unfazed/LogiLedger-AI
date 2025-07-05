@@ -189,7 +189,10 @@ export default function CompanyDashboard() {
 
           <div className="flex items-center gap-4">
             <StyledWrapper>
-              <button className="btn">
+              <button 
+                className="btn"
+                onClick={() => window.open('https://t.me/LogiLedger_aiBot', '_blank')}
+              >
                 <span className="btn-text-one">AI CHATBOT</span>
                 <span className="btn-text-two">OPEN!!</span>
               </button>

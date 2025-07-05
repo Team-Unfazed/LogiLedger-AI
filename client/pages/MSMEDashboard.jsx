@@ -193,11 +193,41 @@ export default function MSMEDashboard() {
 
           <div className="flex items-center gap-4">
             <StyledWrapper>
-              <button className="btn">
-                <span className="btn-text-one">Hover me</span>
-                <span className="btn-text-two">Great!</span>
+              <button 
+                className="btn"
+                onClick={() => window.open('https://t.me/LogiLedger_aiBot', '_blank')}
+              >
+                <span className="btn-text-one">AI CHATBOT</span>
+                <span className="btn-text-two">OPEN!!</span>
               </button>
             </StyledWrapper>
+            {/* Fallback button in case styled-components doesn't work */}
+            <button 
+              className="btn-fallback"
+              onClick={() => window.open('https://t.me/LogiLedger_aiBot', '_blank')}
+              style={{
+                width: '100px',
+                height: '35px',
+                background: 'linear-gradient(to top, #00154c, #12376e, #23487f)',
+                color: '#fff',
+                borderRadius: '50px',
+                border: 'none',
+                outline: 'none',
+                cursor: 'pointer',
+                position: 'relative',
+                boxShadow: '0 15px 30px rgba(0, 0, 0, 0.5)',
+                overflow: 'hidden',
+                marginLeft: '20px',
+                display: 'inline-block',
+                zIndex: 1000,
+                fontWeight: 'bold',
+                fontSize: '10px',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
+              }}
+            >
+              AI CHATBOT
+            </button>
             <ThemeToggle />
             <span className="text-sm text-muted-foreground">
               Welcome, {user?.name}
