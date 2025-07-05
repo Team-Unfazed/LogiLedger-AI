@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LogiLedger AI - Digitizing Logistics & Accounting</title>
+    <meta
+      name="description"
+      content="AI-powered logistics platform connecting companies with MSMEs across India. Smart bidding, automated accounting, and Telegram bot integration."
+    />
+    <script type="module" src="https://unpkg.com/@splinetool/viewer@1.10.22/build/spline-viewer.js"></script>
+    <script>
+      // Ensure Spline viewer is available globally
+      window.addEventListener('load', () => {
+        console.log('Page loaded, checking Spline availability...');
+        
+        // Wait a bit for the script to load
+        setTimeout(() => {
+          if (customElements.get('spline-viewer')) {
+            console.log('✅ Spline viewer custom element is registered');
+          } else {
+            console.log('❌ Spline viewer custom element not found');
+            // Try alternative loading
+            const script = document.createElement('script');
+            script.type = 'module';
+            script.src = 'https://unpkg.com/@splinetool/viewer@1.10.22/build/spline-viewer.js';
+            document.head.appendChild(script);
+          }
+        }, 2000);
+      });
+    </script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+
+    <script type="module" src="/client/App.jsx"></script>
+  </body>
+</html>
