@@ -43,6 +43,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+import { StyledWrapper } from "@/components/ui/styled-wrapper.jsx";
 
 export default function CompanyDashboard() {
   const { user, logout } = useAuth();
@@ -183,12 +184,16 @@ export default function CompanyDashboard() {
         <div className="container flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
             <Truck className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold text-primary">
-              LogiLedger AI
-            </span>
+            <span className="text-2xl font-bold text-primary">LogiLedger AI</span>
           </div>
 
           <div className="flex items-center gap-4">
+            <StyledWrapper>
+              <button className="btn">
+                <span className="btn-text-one">AI CHATBOT</span>
+                <span className="btn-text-two">OPEN!!</span>
+              </button>
+            </StyledWrapper>
             <ThemeToggle />
             <span className="text-sm text-muted-foreground">
               Welcome, {user?.name}
