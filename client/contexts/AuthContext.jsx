@@ -33,34 +33,20 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      // Mock login for demo purposes
-      if (!email || !password) {
-        return { success: false, error: "Email and password are required" };
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const data = await response.json();
+      if (response.ok && data.token && data.user) {
+        localStorage.setItem("logiledger_token", data.token);
+        localStorage.setItem("logiledger_user", JSON.stringify(data.user));
+        setUser(data.user);
+        return { success: true, user: data.user };
+      } else {
+        return { success: false, error: data.message || "Login failed" };
       }
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Mock successful login
-      const mockUser = {
-        id: `user_${Date.now()}`,
-        name: "Demo User",
-        email,
-        userType: email.includes("company") ? "company" : "msme",
-        companyName: email.includes("company")
-          ? "Demo Company"
-          : "Demo Transport",
-        phoneNumber: "+91-9876543210",
-        location: "Mumbai, Maharashtra",
-        createdAt: new Date().toISOString(),
-      };
-
-      const mockToken = `mock_token_${Date.now()}`;
-
-      localStorage.setItem("logiledger_token", mockToken);
-      localStorage.setItem("logiledger_user", JSON.stringify(mockUser));
-      setUser(mockUser);
-      return { success: true, user: mockUser };
     } catch (error) {
       return { success: false, error: "Login failed. Please try again." };
     }
@@ -68,47 +54,22 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      // Validation
-      if (
-        !userData.name ||
-        !userData.email ||
-        !userData.password ||
-        !userData.userType
-      ) {
-        return { success: false, error: "All required fields must be filled" };
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData),
+      });
+      const data = await response.json();
+      if (response.ok && data.token && data.user) {
+        localStorage.setItem("logiledger_token", data.token);
+        localStorage.setItem("logiledger_user", JSON.stringify(data.user));
+        setUser(data.user);
+        return { success: true, user: data.user };
+      } else {
+        return { success: false, error: data.message || "Registration failed" };
       }
-
-      if (userData.password !== userData.confirmPassword) {
-        return { success: false, error: "Passwords do not match" };
-      }
-
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // Mock successful registration
-      const mockUser = {
-        id: `user_${Date.now()}`,
-        name: userData.name,
-        email: userData.email,
-        userType: userData.userType,
-        companyName: userData.companyName || "",
-        phoneNumber: userData.phoneNumber || "",
-        location: userData.location || "",
-        gstNumber: userData.gstNumber || "",
-        createdAt: new Date().toISOString(),
-      };
-
-      const mockToken = `mock_token_${Date.now()}`;
-
-      localStorage.setItem("logiledger_token", mockToken);
-      localStorage.setItem("logiledger_user", JSON.stringify(mockUser));
-      setUser(mockUser);
-      return { success: true, user: mockUser };
     } catch (error) {
-      return {
-        success: false,
-        error: "Registration failed. Please try again.",
-      };
+      return { success: false, error: "Registration failed. Please try again." };
     }
   };
 

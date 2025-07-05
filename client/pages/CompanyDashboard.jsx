@@ -106,7 +106,10 @@ export default function CompanyDashboard() {
         },
         body: JSON.stringify(newConsignment),
       });
-      const data = await response.json();
+      let data = {};
+      try {
+        data = await response.json();
+      } catch {}
       if (response.ok) {
         setShowCreateForm(false);
         setNewConsignment({
