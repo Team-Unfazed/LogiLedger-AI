@@ -35,6 +35,8 @@ export default function Register() {
     phoneNumber: "",
     gstNumber: "",
     location: "",
+    fleetSize: "",
+    vehicleTypes: [],
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -44,6 +46,23 @@ export default function Register() {
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleVehicleTypeChange = (vehicleType) => {
+    setFormData((prev) => {
+      const currentTypes = prev.vehicleTypes || [];
+      if (currentTypes.includes(vehicleType)) {
+        return {
+          ...prev,
+          vehicleTypes: currentTypes.filter(type => type !== vehicleType)
+        };
+      } else {
+        return {
+          ...prev,
+          vehicleTypes: [...currentTypes, vehicleType]
+        };
+      }
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -64,11 +83,39 @@ export default function Register() {
       return;
     }
 
-    const result = await register(formData);
+    // MSME-specific validation
+    if (formData.userType === "msme") {
+      if (!formData.fleetSize || formData.fleetSize < 1) {
+        setError("Fleet size is required for MSME users");
+        setLoading(false);
+        return;
+      }
+      if (!formData.vehicleTypes || formData.vehicleTypes.length === 0) {
+        setError("Please select at least one vehicle type");
+        setLoading(false);
+        return;
+      }
+    }
+
+    // Prepare data for API
+    const apiData = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      userType: formData.userType,
+      companyName: formData.companyName,
+      location: formData.location,
+      phone: formData.phoneNumber,
+      fleetSize: formData.userType === "msme" ? parseInt(formData.fleetSize) : undefined,
+      vehicleTypes: formData.userType === "msme" ? formData.vehicleTypes : undefined,
+    };
+
+    const result = await register(apiData);
 
     if (result.success) {
       // Redirect based on user type
-      if (result.user.userType === "company") {
+      const userType = result.user.userType || result.user.companyType;
+      if (userType === "company") {
         navigate("/company-dashboard");
       } else {
         navigate("/msme-dashboard");
@@ -220,6 +267,43 @@ export default function Register() {
                 />
               </div>
             </div>
+
+            {/* MSME-specific fields */}
+            {formData.userType === "msme" && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="fleetSize">Fleet Size</Label>
+                  <Input
+                    id="fleetSize"
+                    type="number"
+                    min="1"
+                    value={formData.fleetSize}
+                    onChange={(e) =>
+                      handleInputChange("fleetSize", e.target.value)
+                    }
+                    placeholder="Number of vehicles"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Vehicle Types</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {["truck", "tempo", "pickup", "container", "trailer"].map((type) => (
+                      <label key={type} className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.vehicleTypes?.includes(type) || false}
+                          onChange={() => handleVehicleTypeChange(type)}
+                          className="rounded"
+                        />
+                        <span className="text-sm capitalize">{type}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">

@@ -68,6 +68,15 @@ export default function MSMEDashboard() {
       if (response.ok) {
         const data = await response.json();
         setAvailableConsignments(data.consignments || []);
+      } else {
+        console.error("Failed to fetch consignments:", response.status, response.statusText);
+        // Try to get error message from response
+        try {
+          const errorData = await response.json();
+          console.error("Error details:", errorData);
+        } catch (e) {
+          console.error("Could not parse error response");
+        }
       }
     } catch (error) {
       console.error("Error fetching consignments:", error);
@@ -112,21 +121,26 @@ export default function MSMEDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("logiledger_token");
+      const bidData = {
+        consignmentId: selectedConsignment.id,
+        bidAmount: parseFloat(bidAmount),
+        estimatedDelivery,
+        notes: bidNotes,
+      };
+      console.log("[MSMEDashboard] Submitting bid:", bidData);
+      
       const response = await fetch("/api/bids/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          consignmentId: selectedConsignment.id,
-          bidAmount: parseFloat(bidAmount),
-          estimatedDelivery,
-          notes: bidNotes,
-        }),
+        body: JSON.stringify(bidData),
       });
 
       if (response.ok) {
+        const data = await response.json();
+        console.log("[MSMEDashboard] Bid submitted successfully:", data);
         setShowBidForm(false);
         setBidAmount("");
         setEstimatedDelivery("");
@@ -134,9 +148,12 @@ export default function MSMEDashboard() {
         setSelectedConsignment(null);
         fetchAvailableConsignments();
         fetchMyBids();
+      } else {
+        const errorData = await response.json();
+        console.error("[MSMEDashboard] Failed to submit bid:", errorData);
       }
     } catch (error) {
-      console.error("Error submitting bid:", error);
+      console.error("[MSMEDashboard] Error submitting bid:", error);
     }
   };
 
@@ -192,39 +209,9 @@ export default function MSMEDashboard() {
           </div>
 
           <div className="flex items-center gap-4">
-            <StyledWrapper>
-              <button 
-                className="btn"
-                onClick={() => window.open('https://t.me/LogiLedger_aiBot', '_blank')}
-              >
-                <span className="btn-text-one">AI CHATBOT</span>
-                <span className="btn-text-two">OPEN!!</span>
-              </button>
-            </StyledWrapper>
-            {/* Fallback button in case styled-components doesn't work */}
             <button 
-              className="btn-fallback"
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg font-medium text-sm hover:from-blue-700 hover:to-blue-800 transition-all duration-200 shadow-md"
               onClick={() => window.open('https://t.me/LogiLedger_aiBot', '_blank')}
-              style={{
-                width: '100px',
-                height: '35px',
-                background: 'linear-gradient(to top, #00154c, #12376e, #23487f)',
-                color: '#fff',
-                borderRadius: '50px',
-                border: 'none',
-                outline: 'none',
-                cursor: 'pointer',
-                position: 'relative',
-                boxShadow: '0 15px 30px rgba(0, 0, 0, 0.5)',
-                overflow: 'hidden',
-                marginLeft: '20px',
-                display: 'inline-block',
-                zIndex: 1000,
-                fontWeight: 'bold',
-                fontSize: '10px',
-                textTransform: 'uppercase',
-                letterSpacing: '1px'
-              }}
             >
               AI CHATBOT
             </button>
@@ -359,8 +346,13 @@ export default function MSMEDashboard() {
                               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <MapPin className="h-4 w-4" />
-                                  {consignment.origin} →{" "}
-                                  {consignment.destination}
+                                  {typeof consignment.origin === "object"
+                                    ? consignment.origin.fullAddress || `${consignment.origin.city}, ${consignment.origin.state}`
+                                    : consignment.origin}
+                                  {" → "}
+                                  {typeof consignment.destination === "object"
+                                    ? consignment.destination.fullAddress || `${consignment.destination.city}, ${consignment.destination.state}`
+                                    : consignment.destination}
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Package className="h-4 w-4" />

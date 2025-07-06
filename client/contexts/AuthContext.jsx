@@ -14,21 +14,55 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const validateToken = async (token) => {
+    try {
+      const response = await fetch("/api/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.ok) {
+        const userData = await response.json();
+        return { valid: true, user: userData };
+      } else {
+        return { valid: false };
+      }
+    } catch (error) {
+      console.error("Token validation error:", error);
+      return { valid: false };
+    }
+  };
+
   useEffect(() => {
     // Check if user is logged in on app start
+    const checkAuth = async () => {
     const token = localStorage.getItem("logiledger_token");
     const userData = localStorage.getItem("logiledger_user");
 
     if (token && userData) {
       try {
-        setUser(JSON.parse(userData));
+          // Validate token with backend
+          const validation = await validateToken(token);
+          if (validation.valid) {
+            setUser(validation.user);
+          } else {
+            // Token is invalid, clear storage
+            console.log("Token validation failed, clearing auth data");
+            localStorage.removeItem("logiledger_token");
+            localStorage.removeItem("logiledger_user");
+            setUser(null);
+          }
       } catch (error) {
-        console.error("Error parsing user data:", error);
+          console.error("Error validating token:", error);
         localStorage.removeItem("logiledger_token");
         localStorage.removeItem("logiledger_user");
+          setUser(null);
       }
     }
     setLoading(false);
+    };
+
+    checkAuth();
   }, []);
 
   const login = async (email, password) => {
@@ -86,6 +120,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     loading,
     isAuthenticated: !!user,
+    validateToken,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

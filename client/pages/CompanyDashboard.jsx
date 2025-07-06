@@ -41,12 +41,14 @@ import {
   LogOut,
   FileText,
   BarChart3,
+  Eye,
+  Loader2,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { StyledWrapper } from "@/components/ui/styled-wrapper.jsx";
 
 export default function CompanyDashboard() {
-  const { user, logout } = useAuth();
+  const { user, logout, loading: authLoading, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [consignments, setConsignments] = useState([]);
   const [consignmentsLoading, setConsignmentsLoading] = useState(false);
@@ -70,26 +72,59 @@ export default function CompanyDashboard() {
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      console.log("User not authenticated, redirecting to login");
+      navigate("/login");
+    }
+  }, [authLoading, isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (isAuthenticated && user) {
     fetchConsignments();
-  }, []);
+    }
+  }, [isAuthenticated, user]);
 
   const fetchConsignments = async () => {
+    if (!isAuthenticated) {
+      console.log("User not authenticated, skipping fetch");
+      return;
+    }
+
     setConsignmentsLoading(true);
     setConsignmentsError("");
     try {
       const token = localStorage.getItem("logiledger_token");
+      if (!token) {
+        throw new Error("No authentication token found");
+      }
+
       const response = await fetch("/api/consignments/my-consignments", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+      
       if (response.ok) {
         const data = await response.json();
+        console.log("[CompanyDashboard] Fetched consignments:", data.consignments);
         setConsignments(data.consignments || []);
+      } else if (response.status === 401) {
+        console.log("Token invalid, redirecting to login");
+        logout();
+        navigate("/login");
       } else {
-        setConsignmentsError("Failed to fetch consignments.");
+        console.error("Failed to fetch consignments:", response.status, response.statusText);
+        try {
+          const errorData = await response.json();
+          setConsignmentsError(errorData.detail || errorData.message || "Failed to fetch consignments.");
+          console.error("Error details:", errorData);
+        } catch (e) {
+          setConsignmentsError("Failed to fetch consignments.");
+          console.error("Could not parse error response");
+        }
       }
     } catch (error) {
+      console.error("Error fetching consignments:", error);
       setConsignmentsError("Error fetching consignments.");
     }
     setConsignmentsLoading(false);
@@ -99,13 +134,26 @@ export default function CompanyDashboard() {
     e.preventDefault();
     try {
       const token = localStorage.getItem("logiledger_token");
+      
+      // Prepare data with proper types
+      const consignmentData = {
+        title: newConsignment.title,
+        origin: newConsignment.origin,
+        destination: newConsignment.destination,
+        goodsType: newConsignment.goodsType,
+        weight: parseFloat(newConsignment.weight),
+        budget: parseFloat(newConsignment.budget),
+        deadline: newConsignment.deadline,
+        description: newConsignment.description || undefined,
+      };
+
       const response = await fetch("/api/consignments/create", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(newConsignment),
+        body: JSON.stringify(consignmentData),
       });
       let data = {};
       try {
@@ -127,9 +175,10 @@ export default function CompanyDashboard() {
         toast({ title: "Consignment created!", description: data.message || "Your consignment was posted.", variant: "success" });
       } else {
         setConsignmentsError("Failed to create consignment.");
-        toast({ title: "Error", description: data.message || "Failed to create consignment.", variant: "destructive" });
+        toast({ title: "Error", description: data.detail || data.message || "Failed to create consignment.", variant: "destructive" });
       }
     } catch (error) {
+      console.error("Error creating consignment:", error);
       setConsignmentsError("Error creating consignment.");
       toast({ title: "Error", description: error.message || "Error creating consignment.", variant: "destructive" });
     }
@@ -159,6 +208,7 @@ export default function CompanyDashboard() {
     setBidsLoading(true);
     try {
       const token = localStorage.getItem("logiledger_token");
+      console.log("[CompanyDashboard] Fetching bids for consignment:", consignment.id);
       const response = await fetch(`/api/bids/consignment/${consignment.id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -166,11 +216,14 @@ export default function CompanyDashboard() {
       });
       if (response.ok) {
         const data = await response.json();
+        console.log("[CompanyDashboard] Received bids data:", data);
         setBids(data.bids || []);
       } else {
+        console.error("[CompanyDashboard] Failed to fetch bids:", response.status, response.statusText);
         setBidsError("Failed to fetch bids.");
       }
     } catch (error) {
+      console.error("[CompanyDashboard] Error fetching bids:", error);
       setBidsError("Error fetching bids.");
     }
     setBidsLoading(false);
@@ -179,6 +232,20 @@ export default function CompanyDashboard() {
   return (
     <div className="min-h-screen relative">
       <SplineBackground />
+      
+      {/* Show loading while checking authentication */}
+      {authLoading && (
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-6 w-6 animate-spin" />
+            <span>Loading...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Only show dashboard if authenticated */}
+      {!authLoading && isAuthenticated && (
+        <>
       {/* Header */}
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 items-center justify-between">
@@ -502,7 +569,13 @@ export default function CompanyDashboard() {
                           <div className="flex items-center gap-4 text-sm text-muted-foreground">
                             <span className="flex items-center gap-1">
                               <MapPin className="h-4 w-4" />
-                              {consignment.origin} → {consignment.destination}
+                              {typeof consignment.origin === "object"
+                                ? consignment.origin.fullAddress || `${consignment.origin.city}, ${consignment.origin.state}`
+                                : consignment.origin}
+                              {" → "}
+                              {typeof consignment.destination === "object"
+                                ? consignment.destination.fullAddress || `${consignment.destination.city}, ${consignment.destination.state}`
+                                : consignment.destination}
                             </span>
                             <span className="flex items-center gap-1">
                               <Package className="h-4 w-4" />
@@ -558,48 +631,75 @@ export default function CompanyDashboard() {
         </Card>
       </div>
 
+          {/* Bids Dialog */}
       <Dialog open={showBidsDialog} onOpenChange={setShowBidsDialog}>
-        <DialogContent className="max-w-lg">
+            <DialogContent className="max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Bids for: {selectedConsignment?.title}</DialogTitle>
+                <DialogTitle>
+                  Bids for: {selectedConsignment?.title}
+                </DialogTitle>
             <DialogDescription>
-              All bids placed for this consignment
+                  Review and manage bids from transport partners
             </DialogDescription>
           </DialogHeader>
+              <div className="max-h-96 overflow-y-auto">
           {bidsLoading ? (
             <div className="text-center py-8">Loading bids...</div>
           ) : bidsError ? (
             <div className="text-center text-red-500 py-8">{bidsError}</div>
           ) : bids.length === 0 ? (
-            <div className="text-center py-8">No bids yet.</div>
+                  <div className="text-center py-8">
+                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold mb-2">No bids yet</h3>
+                    <p className="text-muted-foreground">
+                      Bids will appear here once transport partners start bidding
+                    </p>
+                  </div>
           ) : (
-            <div className="space-y-4 max-h-96 overflow-y-auto">
+                  <div className="space-y-4">
               {bids.map((bid) => (
-                <Card key={bid.id} className="logistics-card">
-                  <CardContent className="py-3">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold">{bid.bidderName || bid.userName || "Bidder"}</div>
-                        <div className="text-sm text-muted-foreground">{bid.email}</div>
-                      </div>
-                      <div className="text-lg font-bold text-primary">₹{bid.bidAmount?.toLocaleString()}</div>
-                    </div>
-                    <div className="text-sm mt-2">
-                      <span className="font-medium">Delivery:</span> {bid.estimatedDelivery}
+                      <div
+                        key={bid.id}
+                        className="flex items-center justify-between p-4 border rounded-lg"
+                      >
+                        <div className="flex-1">
+                          <h3 className="font-semibold">{bid.bidderCompany}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {bid.bidderName}
+                          </p>
+                          <div className="flex items-center gap-4 mt-2">
+                            <span className="text-lg font-bold text-green-600">
+                              ₹{bid.bidAmount.toLocaleString()}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              Delivery: {new Date(bid.estimatedDelivery).toLocaleDateString()}
+                            </span>
                     </div>
                     {bid.notes && (
-                      <div className="text-sm mt-1 text-muted-foreground">
-                        <span className="font-medium">Notes:</span> {bid.notes}
+                            <p className="text-sm text-muted-foreground mt-2">
+                              {bid.notes}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={bid.status === "pending" ? "default" : "secondary"}>
+                            {bid.status}
+                          </Badge>
+                          {bid.status === "pending" && (
+                            <Button size="sm" variant="outline">
+                              Award Bid
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    )}
-                    <div className="mt-2">{bid.status && <Badge>{bid.status}</Badge>}</div>
-                  </CardContent>
-                </Card>
               ))}
             </div>
           )}
+              </div>
         </DialogContent>
       </Dialog>
+        </>
+      )}
     </div>
   );
 }

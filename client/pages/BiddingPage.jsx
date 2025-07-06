@@ -55,6 +55,15 @@ export default function BiddingPage() {
       if (response.ok) {
         const data = await response.json();
         setConsignments(data.consignments || []);
+      } else {
+        console.error("Failed to fetch consignments:", response.status, response.statusText);
+        // Try to get error message from response
+        try {
+          const errorData = await response.json();
+          console.error("Error details:", errorData);
+        } catch (e) {
+          console.error("Could not parse error response");
+        }
       }
     } catch (error) {
       console.error("Error fetching consignments:", error);
@@ -412,7 +421,13 @@ export default function BiddingPage() {
                           <div>
                             <p className="font-medium">Route</p>
                             <p className="text-muted-foreground">
-                              {consignment.origin} → {consignment.destination}
+                              {typeof consignment.origin === "object"
+                                ? consignment.origin.fullAddress || `${consignment.origin.city}, ${consignment.origin.state}`
+                                : consignment.origin}
+                              {" → "}
+                              {typeof consignment.destination === "object"
+                                ? consignment.destination.fullAddress || `${consignment.destination.city}, ${consignment.destination.state}`
+                                : consignment.destination}
                             </p>
                           </div>
                         </div>

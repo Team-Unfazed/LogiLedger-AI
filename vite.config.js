@@ -16,6 +16,8 @@ export default defineConfig({
     port: 8080,
     proxy: {
       '/api': 'http://localhost:3000',
+      '/health': 'http://localhost:3000',
+      '/docs': 'http://localhost:3000',
     },
   },
   build: {

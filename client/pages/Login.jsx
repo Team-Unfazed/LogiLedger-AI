@@ -33,8 +33,9 @@ export default function Login() {
     const result = await login(email, password);
 
     if (result.success) {
-      // Redirect based on user type
-      if (result.user.userType === "company") {
+      // Redirect based on user type (handle both userType and companyType)
+      const userType = result.user.userType || result.user.companyType;
+      if (userType === "company") {
         navigate("/company-dashboard");
       } else {
         navigate("/msme-dashboard");

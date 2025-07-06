@@ -1,275 +1,196 @@
-# LogiLedger AI
+# LogiLedger AI - Logistics Platform
 
-**Digitizing Logistics & Accounting for Indian Fleet Operators**
+A comprehensive logistics platform connecting MSME (Micro, Small & Medium Enterprises) companies with larger corporations for efficient cargo transportation and logistics management.
 
-A full-stack web application that connects big companies with MSMEs for logistics operations, featuring AI-powered accounting, smart bidding, and Telegram bot integration.
+## Features
 
-## 🚀 Features
+- **User Management**: Separate dashboards for MSME companies and large corporations
+- **Consignment Management**: Create and manage logistics consignments
+- **Bidding System**: MSME companies can bid on available consignments
+- **Job Tracking**: Real-time job status tracking and management
+- **Location Matching**: Intelligent location-based matching for optimal logistics
+- **Telegram Bot Integration**: Automated notifications and updates
+- **Modern UI**: Beautiful, responsive interface built with React and Tailwind CSS
 
-### Core Platform
+## Tech Stack
 
-- **Smart Bidding System**: AI-powered matching between companies and transport partners
-- **Dual Dashboards**: Separate interfaces for companies (consignment posters) and MSMEs (bidders)
-- **Real-time Bidding**: Live bidding platform with status tracking
-- **Multi-language Support**: Available in Hindi and English
-
-### AI & Automation
-
-- **AI Accounting Module**: Automated expense tracking and categorization
-- **OCR Integration**: Extract data from receipts and invoices automatically
-- **Telegram Bot Integration**: Connect with autobook AI for financial management
-- **Invoice Generation**: Automated invoice creation and management
-
-### Business Features
-
-- **Consignment Management**: Post, track, and manage logistics consignments
-- **Bid Management**: Place, track, and manage competitive bids
-- **Job Tracking**: Monitor delivery status and completion
-- **Financial Integration**: Connect with Tally, Airtable, and UPI systems
-
-## 🛠 Tech Stack
-
-### Frontend (JavaScript React)
-
-- **React 18** with functional components and hooks
-- **React Router 6** for SPA navigation
-- **TailwindCSS 3** for modern styling
-- **Radix UI** for accessible component library
-- **Lucide React** for icons
-- **React Hook Form** for form management
-
-### Backend (Node.js)
-
-- **Express.js** with middleware stack
-- **JWT Authentication** for secure access
-- **bcrypt** for password hashing
-- **Rate limiting** and security middleware
-- **CORS** configuration for API access
-
-### Development
-
+### Frontend
+- **React 18** with TypeScript
 - **Vite** for fast development and building
-- **ES Modules** throughout the stack
-- **Hot reload** for both frontend and backend
+- **Tailwind CSS** for styling
+- **Radix UI** for accessible components
+- **React Router** for navigation
+- **React Query** for data fetching
 
-## 📁 Project Structure
+### Backend
+- **FastAPI** (Python) for high-performance API
+- **JWT** for authentication
+- **Pydantic** for data validation
+- **Uvicorn** for ASGI server
+- **Python 3.8+**
 
-```
-LogiLedger AI/
-├── client/                     # React frontend
-│   ├── components/ui/          # Reusable UI components
-│   ├── contexts/              # React contexts (Auth)
-│   ├── pages/                 # Route components
-│   │   ├── HomePage.jsx       # Landing page
-│   │   ├── Login.jsx          # Authentication
-│   │   ├── Register.jsx       # User registration
-│   │   ├── CompanyDashboard.jsx
-│   │   ├── MSMEDashboard.jsx
-│   │   └── BiddingPage.jsx    # Public bidding platform
-│   ├── App.jsx               # Main app component
-│   └── global.css           # TailwindCSS theme
-├── server/                   # Express API backend
-│   ├── routes/              # API route handlers
-│   │   ├── auth.js         # Authentication endpoints
-│   │   ├── consignments.js # Consignment management
-│   │   ├── bids.js         # Bidding system
-│   │   ├── jobs.js         # Job management
-│   │   └── telegram.js     # Telegram bot integration
-│   └── index.js            # Main server setup
-├── shared/                  # Shared types and interfaces
-└── README.md
-```
-
-## 🚦 Getting Started
+## Quick Start
 
 ### Prerequisites
 
-- Node.js 18+
-- npm or yarn package manager
+- Node.js 18+ (for frontend)
+- Python 3.8+ (for backend)
+- npm or yarn
 
-### Installation
+### Backend Setup
 
-1. **Clone the repository**
+1. Navigate to the Python backend:
+```bash
+cd python_backend
+```
 
+2. Install Python dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Create a `.env` file in the `python_backend` directory:
+```env
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
+```
+
+4. Start the Python backend:
    ```bash
-   git clone <repository-url>
-   cd logiledger-ai
+python start.py
    ```
 
-2. **Install dependencies**
+The backend will be available at `http://localhost:8000`
 
+### Frontend Setup
+
+1. Install frontend dependencies:
    ```bash
    npm install
    ```
 
-3. **Start development server**
-
+2. Start the development server:
    ```bash
    npm run dev
    ```
 
-4. **Access the application**
-   - Frontend: http://localhost:8080
-   - API: http://localhost:8080/api
+The frontend will be available at `http://localhost:8081`
 
-### Build for Production
+## Project Structure
 
-```bash
-npm run build
-npm start
+```
+logiledger-ai/
+├── src/                    # Frontend React application
+│   ├── components/         # Reusable UI components
+│   ├── pages/             # Page components
+│   ├── contexts/          # React contexts
+│   ├── utils/             # Utility functions
+│   └── main.tsx           # Application entry point
+├── python_backend/         # Python FastAPI backend
+│   ├── routers/           # API route modules
+│   ├── utils/             # Utility functions
+│   ├── main.py            # FastAPI application
+│   ├── start.py           # Development server
+│   └── requirements.txt   # Python dependencies
+├── package.json           # Frontend dependencies
+├── vite.config.js         # Vite configuration
+└── README.md              # This file
 ```
 
-## 🔐 Authentication
+## API Documentation
 
-The platform supports two user types:
+Once the backend is running, you can access:
 
-1. **Companies**: Can post consignments and receive bids
-2. **MSMEs**: Can browse opportunities and place bids
+- **Swagger UI**: `http://localhost:8000/docs`
+- **ReDoc**: `http://localhost:8000/redoc`
 
-### Registration Process
+## User Types
 
-- Choose user type (Company or MSME)
-- Provide business details and GST information
-- Verify email and complete profile
+### MSME Companies
+- View available consignments in their area
+- Place bids on consignments
+- Track their active jobs
+- Manage their profile and location
 
-## 📊 User Flows
+### Large Corporations
+- Create and manage consignments
+- Review and accept bids from MSMEs
+- Track job progress
+- Manage their logistics operations
 
-### For Companies
+## Key Features
 
-1. Register as Company user type
-2. Access Company Dashboard
-3. Create new consignments with details
-4. Review and manage incoming bids
-5. Award projects to selected bidders
-6. Track delivery status
+### Location Matching
+The platform uses intelligent location matching to:
+- Find MSMEs near consignment origins
+- Filter consignments by MSME location
+- Calculate distances using Haversine formula
+- Provide location-based recommendations
 
-### For MSMEs
+### Bidding System
+- MSMEs can place competitive bids
+- Corporations can review and accept bids
+- Automatic bid count tracking
+- Bid status management
 
-1. Register as MSME user type
-2. Browse available consignments
-3. Place competitive bids
-4. Track bid status
-5. Manage awarded jobs
-6. Upload invoices and completion proof
+### Job Tracking
+- Real-time job status updates
+- Progress tracking from assignment to completion
+- Notes and communication features
+- Timeline management
 
-## 🤖 Telegram Bot Integration
+## Development
 
-LogiLedger AI integrates with **autobook AI** Telegram bot for financial management:
+### Frontend Development
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run test         # Run tests
+```
 
-- **Automated Expense Tracking**: Send financial data to bot
-- **Invoice Processing**: OCR and AI categorization
-- **GST Compliance**: Automated tax calculations
-- **Financial Alerts**: Real-time notifications
-
-### Connection Process
-
-1. Access Telegram integration in dashboard
-2. Provide Telegram username
-3. Send verification code to @autobookAI_bot
-4. Complete linking process
-
-## 🎨 Design System
-
-### Brand Colors
-
-- **Primary**: Deep Blue (#1e3a8a) - Trust and reliability
-- **Secondary**: Orange (#fb923c) - Energy and optimism
-- **Accent**: Light Blue (#e0f2fe) - Clean and modern
-
-### UI Components
-
-- Modern card-based layouts
-- Consistent spacing and typography
-- Responsive design for all screen sizes
-- Accessibility-first approach with Radix UI
-
-## 🔌 API Endpoints
-
-### Authentication
-
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `GET /api/auth/verify` - Token verification
-
-### Consignments
-
-- `POST /api/consignments/create` - Create consignment
-- `GET /api/consignments/my-consignments` - Get user's consignments
-- `GET /api/consignments/available` - Get available consignments
-- `GET /api/consignments/public` - Public bidding page data
-
-### Bidding
-
-- `POST /api/bids/create` - Place a bid
-- `GET /api/bids/my-bids` - Get user's bids
-- `POST /api/bids/:bidId/award` - Award a bid
-
-### Jobs
-
-- `GET /api/jobs/awarded` - Get awarded jobs
-- `PUT /api/jobs/:jobId/status` - Update job status
-- `POST /api/jobs/:jobId/invoice` - Upload invoice
-
-### Telegram Integration
-
-- `POST /api/telegram/link-account` - Link Telegram account
-- `POST /api/telegram/process-financials` - Send financial data
-
-## 🌐 Deployment
-
-### Using Netlify (Recommended)
-
-1. Connect repository to Netlify
-2. Set build command: `npm run build`
-3. Set publish directory: `dist/spa`
-4. Configure environment variables
+### Backend Development
+```bash
+cd python_backend
+python start.py      # Start development server
+```
 
 ### Environment Variables
 
+#### Backend (.env in python_backend/)
 ```env
-JWT_SECRET=your-secret-key
-NODE_ENV=production
-TELEGRAM_BOT_TOKEN=your-bot-token
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+TELEGRAM_BOT_TOKEN=your-telegram-bot-token
 ```
 
-## 🔮 Future Enhancements
+## Deployment
 
-### Phase 2 Features
+### Frontend
+1. Build the application: `npm run build`
+2. Deploy the `dist` folder to your hosting service
 
-- **Credit Scoring**: AI-powered risk assessment
-- **Voice Input**: Voice commands for mobile users
-- **GST Integration**: Direct eWay bill generation
-- **Advanced Analytics**: Business intelligence dashboard
-- **UPI Payments**: Integrated payment processing
+### Backend
+1. Set up production environment variables
+2. Use a production ASGI server like uvicorn with workers
+3. Set up proper logging and monitoring
+4. Configure database (currently using in-memory storage)
 
-### Technical Improvements
-
-- Database migration (PostgreSQL/MongoDB)
-- Real-time notifications (WebSocket)
-- Mobile app (React Native)
-- Advanced caching (Redis)
-- Microservices architecture
-
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Create Pull Request
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-## 📄 License
+## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License.
 
-## 📞 Support
+## Support
 
-For support and questions:
-
-- Email: support@logiledger.ai
-- Documentation: [docs.logiledger.ai](https://docs.logiledger.ai)
-- Issues: GitHub Issues
-
----
-
-**LogiLedger AI** - Transforming logistics operations across India with AI-powered solutions.
+For support and questions, please open an issue in the repository.
